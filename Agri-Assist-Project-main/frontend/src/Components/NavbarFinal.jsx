@@ -1,83 +1,88 @@
-import { React, useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import "@fontsource/open-sans";
-import axios from 'axios';
-import HeaderSection from './HeaderSection';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import HeaderSection from "./HeaderSection";
+
 function NavbarFinal() {
     const token = window.localStorage.getItem("token");
-    const [featureColor, changeFeatureColor] = useState('none');
-    const [homeColor, changeHomeColor] = useState('none');
-    const [aboutColor, changeAboutColor] = useState('none');
-    const [contactColor, changeContactColor] = useState('none');
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const [activeColor, setActiveColor] = useState({
+        home: "none",
+        features: "none",
+        about: "none",
+        contact: "none",
+    });
+
+    // Update active tab color based on current route
     useEffect(() => {
-        console.log(location.pathname);
-        if (location.pathname === '/features') {
-            changeFeatureColor('aqua');
-            changeAboutColor('none');
-            changeHomeColor('none');
-            changeContactColor('none');
-        }
-        else if (location.pathname === '/') {
-            changeFeatureColor('none');
-            changeAboutColor('none');
-            changeHomeColor('aqua');
-            changeContactColor('none');
-        }
-        else if (location.pathname === '/aboutus') {
-            changeFeatureColor('none');
-            changeAboutColor('aqua');
-            changeHomeColor('none');
-            changeContactColor('none');
-        }
-        else if (location.pathname === '/contactus') {
-            changeFeatureColor('none');
-            changeAboutColor('none');
-            changeHomeColor('none');
-            changeContactColor('aqua');
-        }
-    }, [])
+        const path = location.pathname;
+        setActiveColor({
+            home: path === "/" ? "aqua" : "none",
+            features: path === "/features" ? "aqua" : "none",
+            about: path === "/aboutus" ? "aqua" : "none",
+            contact: path === "/contactus" ? "aqua" : "none",
+        });
+    }, [location.pathname]);
+
     const handleSignout = () => {
         localStorage.clear();
-        axios.post('https://agri-assist-backend.onrender.com/signout')
+        axios
+            .post("https://agri-assist-backend.onrender.com/signout")
             .then(() => {
-                console.log("Successfully Log Out");
+                console.log("Successfully Logged Out");
+                navigate("/"); // Redirect to home after logout
             })
-            .catch((err) => {
-                console.log("something went wronG!!" + err);
-            })
-    }
+            .catch((err) => console.log("Something went wrong: " + err));
+    };
 
     return (
         <>
             <HeaderSection />
-            <nav className="navbar navbar-expand-sm navbar-dark bg-light">
-                <div className="container-fluid" style={{ textAlign: "center" }}>
-                    <a className="navbar-brand" style={{ textAlign: "center", marginLeft: '50px', color: 'black' }} href="/">Agri-Assist</a>
-                    <button style={{ backgroundColor: 'black' }} className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
+            <nav className="navbar navbar-expand-sm navbar-light bg-light">
+                <div className="container-fluid text-center">
+                    <Link className="navbar-brand" to="/" style={{ marginLeft: "50px", color: "black" }}>
+                        Agri-Assist
+                    </Link>
+                    <button
+                        className="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mynavbar"
+                        style={{ backgroundColor: "black" }}
+                    >
                         <span className="navbar-toggler-icon"></span>
                     </button>
-                    <div style={{ alignContent: 'center', alignItems: 'center' }} className="collapse navbar-collapse" id="mynavbar">
+                    <div className="collapse navbar-collapse" id="mynavbar">
                         <ul className="navbar-nav me-auto">
-                            <li className="nav-item" style={{ backgroundColor: homeColor }}>
-                                <a className="nav-link" style={{ textAlign: "center", color: 'black' }} href="/">Home</a>
+                            <li className="nav-item" style={{ backgroundColor: activeColor.home }}>
+                                <Link className="nav-link" to="/" style={{ color: "black" }}>
+                                    Home
+                                </Link>
                             </li>
-
-                            <li className="nav-item" style={{ backgroundColor: featureColor }}>
-                                <a className="nav-link" style={{ color: 'black' }} href="/features">Features</a>
+                            <li className="nav-item" style={{ backgroundColor: activeColor.features }}>
+                                <Link className="nav-link" to="/features" style={{ color: "black" }}>
+                                    Features
+                                </Link>
                             </li>
-                            <li className="nav-item" style={{ backgroundColor: aboutColor }}>
-                                <a className="nav-link" style={{ color: 'black' }} href="/aboutus">About Us</a>
+                            <li className="nav-item" style={{ backgroundColor: activeColor.about }}>
+                                <Link className="nav-link" to="/aboutus" style={{ color: "black" }}>
+                                    About Us
+                                </Link>
                             </li>
-                            <li className="nav-item" style={{ backgroundColor: contactColor }}>
-                                <a className="nav-link" style={{ color: 'black' }} href="/contactus">Contact Us</a>
+                            <li className="nav-item" style={{ backgroundColor: activeColor.contact }}>
+                                <Link className="nav-link" to="/contactus" style={{ color: "black" }}>
+                                    Contact Us
+                                </Link>
                             </li>
-                            {token ?
+                            {token && (
                                 <li className="nav-item">
-                                    <a className="nav-link" style={{ color: 'black' }} onClick={handleSignout} href="/">Sign-out</a>
+                                    <button className="nav-link btn btn-link text-black" onClick={handleSignout}>
+                                        Sign-out
+                                    </button>
                                 </li>
-                                : ""
-                            }
+                            )}
                         </ul>
                     </div>
                 </div>
@@ -85,4 +90,5 @@ function NavbarFinal() {
         </>
     );
 }
+
 export default NavbarFinal;
