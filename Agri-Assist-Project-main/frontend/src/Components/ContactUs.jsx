@@ -1,118 +1,76 @@
-import { React, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import NavbarFinal from './NavbarFinal';
 import "@fontsource/open-sans";
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
-import { Box, Grid, Typography, Item } from '@mui/material';
+import { Grid, Typography, Box } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function ContactUs() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [subject, setSubject] = useState('');
-    const [issue, setIssue] = useState('');
-    const handleSubmit = () => {
-        const dataMap = {
-            Name: name,
-            Email: email,
-            Phone: phone,
-            Subject: subject,
-            Issue: issue
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        issue: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async () => {
+        try {
+            const response = await axios.post("https://agri-assist-backend.onrender.com/sendEmail", formData);
+            setFormData({ name: '', email: '', phone: '', subject: '', issue: '' });
+            toast.success(response.data, { position: toast.POSITION.BOTTOM_RIGHT });
+        } catch (error) {
+            toast.error(error.response?.data || "An error occurred", { position: toast.POSITION.BOTTOM_RIGHT });
         }
-        axios({
-            url: "https://agri-assist-backend.onrender.com/sendEmail",
-            method: "POST",
-            data: dataMap,
-        })
-            .then((res) => {
-                setName('');
-                setEmail('');
-                setPhone('');
-                setSubject('');
-                setIssue('');
-                console.log(res);
-                toast.success(res.data, {
-                    position: toast.POSITION.BOTTOM_RIGHT
-                });
+    };
 
-            })
-            .catch((err) => {
-                console.log(err);
-                toast.error(err.response.data, {
-                    position: toast.POSITION.BOTTOM_RIGHT
-                });
-            })
-    }
-
+    const formFields = [
+        { label: "Name", type: "text", name: "name", placeholder: "Enter Name" },
+        { label: "Email", type: "email", name: "email", placeholder: "Enter Email" },
+        { label: "Phone Number", type: "number", name: "phone", placeholder: "Enter Phone Number" },
+        { label: "Subject", type: "text", name: "subject", placeholder: "Subject" },
+    ];
 
     return (
         <>
             <NavbarFinal />
-            <Grid container
-                spacing={0}
-                alignItems="center"
-                justifyContent="center"
-                sx={{ paddingTop: "20px", display: "grid" }}>
+            <Grid container justifyContent="center" sx={{ paddingTop: "20px" }}>
                 <Typography sx={{ fontWeight: "bold", fontFamily: "Open Sans", fontSize: "30px", textAlign: "center" }}>Contact Us</Typography>
-                <Box item
-                    spacing={0}
-                    alignItems="center"
-                    justifyContent="center"
-                    md={12}
-                    sx={{ backgroundColor: "#99F3BD", paddingTop: "20px", display: "grid", minHeight: "70vh" }}>
+                <Box sx={{ backgroundColor: "#99F3BD", padding: "20px", minHeight: "70vh", borderRadius: "10px" }}>
+                    {formFields.map(({ label, type, name, placeholder }) => (
+                        <Row key={name} className="mb-3">
+                            <Col>
+                                <Form.Label style={{ fontWeight: "bold" }}>{label}</Form.Label>
+                            </Col>
+                            <Col>
+                                <Form.Control type={type} name={name} value={formData[name]} placeholder={placeholder} onChange={handleChange} />
+                            </Col>
+                        </Row>
+                    ))}
                     <Row>
                         <Col>
-                            <Form.Label style={{ fontStyle: "Open Sans", fontWeight: "bold" }}>Name</Form.Label>
+                            <Form.Label style={{ fontWeight: "bold" }}>Issues</Form.Label>
                         </Col>
                         <Col>
-                            <Form.Control value={name} type="text" placeholder='Enter Name' onChange={(e) => { setName(e.target.value) }} />
+                            <Form.Control as="textarea" name="issue" rows={5} placeholder="Describe your issue..." value={formData.issue} onChange={handleChange} />
                         </Col>
                     </Row>
-                    <Row>
+                    <Row className="mt-3 text-center">
                         <Col>
-                            <Form.Label style={{ fontStyle: "Open Sans", fontWeight: "bold" }}>Email</Form.Label>
-                        </Col>
-                        <Col>
-                            <Form.Control value={email} type="email" placeholder='Enter Email' onChange={(e) => { setEmail(e.target.value) }} />
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <Form.Label style={{ fontStyle: "Open Sans", fontWeight: "bold" }}>Phone Number</Form.Label>
-                        </Col>
-                        <Col>
-                            <Form.Control value={phone} type="number" placeholder='Enter Phone Number' onChange={(e) => { setPhone(e.target.value) }} />
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <Form.Label style={{ fontStyle: "Open Sans", fontWeight: "bold" }}>Subject</Form.Label>
-                        </Col>
-                        <Col>
-                            <Form.Control value={subject} type="text" placeholder='Subject' onChange={(e) => { setSubject(e.target.value) }} />
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <Form.Label style={{ fontStyle: "Open Sans", fontWeight: "bold" }}>Issues</Form.Label>
-                        </Col>
-                        <Col>
-                            <Form.Control value={issue} as="textarea" rows={5} placeholder='Describe your issue in brief...' onChange={(e) => { setIssue(e.target.value) }} />
-                        </Col>
-                    </Row>
-                    <Row >
-                        <Col >
-                            <Button onClick={handleSubmit} style={{ marginLeft: "150px" }}>Submit</Button>
+                            <Button onClick={handleSubmit}>Submit</Button>
                         </Col>
                     </Row>
                 </Box>
-                {/* </Grid> */}
-            </Grid >
+            </Grid>
             <ToastContainer />
-
         </>
-    )
+    );
 }
+
 export default ContactUs;
