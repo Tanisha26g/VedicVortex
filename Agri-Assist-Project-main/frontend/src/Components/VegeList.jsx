@@ -1,54 +1,50 @@
-import React from 'react';
-import { Table, Dropdown, Form, Button } from 'react-bootstrap';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Table, Dropdown, Form } from 'react-bootstrap';
 import axios from 'axios';
-function VegeList() {
-    let [data, setData] = useState([]);
-    let [stateInfo, setStateInfo] = useState('telangana');
 
-    function handleClick(e) {
-        console.log("hello:" + e.target.value);
-        setStateInfo(e.target.value);
-    }
+function VegeList() {
+    const [data, setData] = useState([]);
+    const [stateInfo, setStateInfo] = useState('telangana');
+
     useEffect(() => {
         axios.post('https://agri-assist-backend.onrender.com/get-item', {
-            method: 'POST',
-            body: { stateInfo }
-        }).then((res) => {
-            setData(res.data.filter((data) => data.vegetable_names !== ''));
+            stateInfo: stateInfo
+        }).then((res) => { 
+            setData(res.data.filter((item) => item.vegetable_names !== '')); 
             console.log(res.data);
-        })
-    }, [stateInfo])
+        }).catch((error) => {
+            console.error("Error fetching data:", error);
+        });
+    }, [stateInfo]);
+
+    function handleClick(e) {
+        setStateInfo(e.target.getAttribute('data-value'));
+    }
+
     return (
         <>
             <Dropdown style={{ position: 'absolute', right: '75%' }} >
                 <Dropdown.Toggle id="dropdown-button-dark-example1" variant="secondary">
                     Select State
                 </Dropdown.Toggle>
-                <Dropdown.Menu >
-                    <Dropdown.Item>
-                        <Button onClick={handleClick} value="andhraPradesh" variant='light' >Andhra Pradesh</Button>
-                    </Dropdown.Item>
-                    <Dropdown.Item>
-                        <Button onClick={handleClick} value="arunachalPradesh" variant='light' >Arunachal Pradesh</Button>
-                    </Dropdown.Item>
-                    <Dropdown.Item >
-                        <Button onClick={handleClick} value="telangana" variant='light' >Telangana</Button>
-                    </Dropdown.Item>
-                    <Dropdown.Item>
-                        <Button onClick={handleClick} value="maharashtra" variant='light'>Maharashtra</Button>
-                    </Dropdown.Item>
+                <Dropdown.Menu>
+                    <Dropdown.Item data-value="andhraPradesh" onClick={handleClick}>Andhra Pradesh</Dropdown.Item>
+                    <Dropdown.Item data-value="arunachalPradesh" onClick={handleClick}>Arunachal Pradesh</Dropdown.Item>
+                    <Dropdown.Item data-value="telangana" onClick={handleClick}>Telangana</Dropdown.Item>
+                    <Dropdown.Item data-value="maharashtra" onClick={handleClick}>Maharashtra</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
-            <Form.Label style={{ position: 'absolute', right: '42%', width: '30%' }} ><b>Current State Value</b></Form.Label>
+
+            <Form.Label style={{ position: 'absolute', right: '42%', width: '30%' }}>
+                <b>Current State Value</b>
+            </Form.Label>
             <Form.Control
                 type='text'
                 value={stateInfo}
                 style={{ position: 'absolute', right: '40%', width: '20%', fontWeight: 'bold' }}
                 readOnly
             />
-            <br />
-            <br />
+            <br /><br />
 
             <Table striped bordered hover variant='light'>
                 <thead>
@@ -62,21 +58,20 @@ function VegeList() {
                 </thead>
                 <tbody>
                     {
-                        data.map((item) => {
-                            return (
-                                <tr>
-                                    <td>{item.vegetable_names}</td>
-                                    <td>{item.wholesale_price}</td>
-                                    <td>{item.retail_price}</td>
-                                    <td>{item.shoppingmall_price}</td>
-                                    <td>{item.units}</td>
-                                </tr>
-                            )
-                        })
+                        data.map((item, index) => (
+                            <tr key={index}>
+                                <td>{item.vegetable_names}</td>
+                                <td>{item.wholesale_price}</td>
+                                <td>{item.retail_price}</td>
+                                <td>{item.shoppingmall_price}</td>
+                                <td>{item.units}</td>
+                            </tr>
+                        ))
                     }
                 </tbody>
             </Table>
         </>
-    )
+    );
 }
+
 export default VegeList;
